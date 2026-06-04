@@ -1,88 +1,111 @@
 # SwagLabs Automation Project
 
+Automated test suite for [Swag Labs](https://www.saucedemo.com) (UI) and [Petstore API](https://petstore.swagger.io).
 
-========================================
-UI Automation:
-========================================
+---
 
-UI Test Suite - Swag Labs (https://www.saucedemo.com)
+## Tech Stack
 
-========================================
-1- Tools / Frameworks
-========================================
+| Tool | Version | Purpose |
+|---|---|---|
+| Python | 3.13 | Language |
+| Playwright for Python | 1.60 | Browser automation (UI) and API requests (API) |
+| pytest | 9.0 | Test runner, fixtures, parametrize |
 
-Tool                    Version   Purpose
-----------------------  -------   ----------------------------------------
-Python                  3.13      Language
-Playwright for Python   1.60      Browser automation, locators, assertions
-pytest                  9.0       Test runner, fixtures, parametrize
+---
 
+## Project Structure
 
-========================================
-2- How to Run
-========================================
+```
+SwagLabs/
+├── ui/
+│   ├── conftest.py          # Browser/page fixtures and shared test data
+│   ├── pages/               # Page Object Models (one file per page)
+│   └── tests/               # UI test files
+├── api/
+│   ├── conftest.py          # API request context fixtures
+│   ├── client/
+│   │   └── pet_api_client.py  # PetApiClient (HTTP methods + payload builder)
+│   └── tests/               # API test files
+├── test_data/
+│   ├── ui/ui_test_data.json   # Users, products, error messages, checkout data
+│   └── api/api_test_data.json # Pet payloads, statuses, edge case inputs
+├── flows.txt                # UI test scenarios and design decisions
+├── api-tests.txt            # API test scenarios and design decisions
+└── pytest.ini               # pytest config (defaults to ui/tests)
+```
 
-Install dependencies (first time only):
-    pip install pytest playwright pytest-playwright
-    playwright install chromium
+---
 
-Run all UI tests:
-    python -m pytest ui/tests/ -v
+## Important
 
-Run a specific test file:
-    python -m pytest ui/tests/test_auth.py -v
-    python -m pytest ui/tests/test_cart.py -v
-    python -m pytest ui/tests/test_checkout.py -v
-    python -m pytest ui/tests/test_inventory.py -v
+**UI and API tests must be run in separate pytest sessions.**
 
+Playwright's sync API cannot run inside the asyncio event loop started by
+`pytest-playwright` when both test types run together.
 
-NOTE: Run UI and API tests separately. See api-tests.txt for API instructions.
+---
 
-========================================
- *** More info on flows.txt file
-========================================
+## Running the Tests
 
+### Install dependencies (first time only)
 
-========================================
-API Test Suite - Petstore Pet Endpoints:
-========================================
+```bash
+pip install pytest playwright pytest-playwright
+playwright install chromium
+```
 
+### Run UI tests
 
-========================================
-1- Tools / Frameworks
-========================================
+```bash
+python -m pytest ui/tests/ -v
+```
 
-Tool                    Version   Purpose
-----------------------  -------   ----------------------------------------
-Python                  3.13      Language
-Playwright for Python   1.60      APIRequestContext for API calls, browser automation for UI
-pytest                  9.0       Test runner, fixtures, assertions
+Run a specific file:
 
-Playwright's APIRequestContext is used for all API HTTP calls.
-UI and API tests must be run in separate pytest sessions to avoid
-asyncio conflicts.
+```bash
+python -m pytest ui/tests/test_auth.py -v
+python -m pytest ui/tests/test_cart.py -v
+python -m pytest ui/tests/test_checkout.py -v
+python -m pytest ui/tests/test_inventory.py -v
+```
 
+Run in headed mode (see the browser):
 
-========================================
-2- How to Run
-========================================
+```bash
+python -m pytest ui/tests/ -v --headed
+```
 
-Install dependencies (first time only):
-    pip install pytest playwright pytest-playwright
-    playwright install chromium
+### Run API tests
 
-IMPORTANT: UI and API tests must be run separately.
-Playwright's sync API cannot run inside the asyncio event loop started
-by pytest-playwright when UI and API tests run in the same session.
+```bash
+python -m pytest api/tests/ -v
+```
 
-Run API tests only:
-    python -m pytest api/tests/ -v
+---
 
-Run UI tests only:
-    python -m pytest ui/tests/ -v
+## What is Covered
 
-========================================
- *** More info on api-tests.txt file
-========================================
+### UI — Swag Labs (`ui/tests/`)
 
+| Area | Tests | File |
+|---|---|---|
+| Authentication | TC-AUTH-01 to TC-AUTH-07 (10 runs via parametrize) | `test_auth.py` |
+| Inventory | TC-INV-01 to TC-INV-07 | `test_inventory.py` |
+| Shopping Cart | TC-CART-01 to TC-CART-07 | `test_cart.py` |
+| Checkout | TC-CHK-01 to TC-CHK-08 | `test_checkout.py` |
 
+See **flows.txt** for full scenario descriptions and design decisions.
+
+### API — Petstore (`api/tests/`)
+
+| Endpoint | Tests |
+|---|---|
+| `POST /pet` | TC-PET-01, 11, 12, 13, 14 |
+| `GET /pet/{id}` | TC-PET-02, 04, 09 |
+| `PUT /pet` | TC-PET-03 |
+| `DELETE /pet/{id}` | TC-PET-10 |
+| `GET /pet/findByStatus` | TC-PET-05, 06, 07, 08 |
+| `POST /pet/{petId}/uploadImage` | TC-PET-15 |
+
+See **api-tests.txt** for full scenario descriptions and design decisions.
