@@ -1,0 +1,39 @@
+{
+  "users": {
+    "standard":   {"username": "standard_user",           "password": "secret_sauce"},
+    "locked":     {"username": "locked_out_user",          "password": "secret_sauce"},
+    "problem":    {"username": "problem_user",             "password": "secret_sauce"},
+    "perf_glitch":{"username": "performance_glitch_user",  "password": "secret_sauce"},
+    "error":      {"username": "error_user",               "password": "secret_sauce"},
+    "visual":     {"username": "visual_user",              "password": "secret_sauce"}
+  },
+  "products": {
+    "backpack":   "Sauce Labs Backpack",
+    "bike_light": "Sauce Labs Bike Light",
+    "bolt_shirt": "Sauce Labs Bolt T-Shirt",
+    "fleece":     "Sauce Labs Fleece Jacket",
+    "onesie":     "Sauce Labs Onesie",
+    "red_shirt":  "Test.allTheThings() T-Shirt (Red)"
+  },
+  "errors": {
+    "locked_out":        "Epic sadface: Sorry, this user has been locked out.",
+    "wrong_password":    "Epic sadface: Username and password do not match any user in this service",
+    "username_required": "Epic sadface: Username is required",
+    "password_required": "Epic sadface: Password is required"
+  },
+  "test_data": {
+    "wrong_password": "password"
+  },
+  "cart_data": {
+    "one_item":   "1",
+    "three_item": "3"
+  },
+  "check_out_page_data": {
+    "order_info": {"name": "Joe", "lastname": "Black", "zipcode": "95032"},
+    "thank_you_message_title": "Thank you for your order!",
+    "thank_you_message_info": "Your order has been dispatched, and will arrive just as fast as the pony can get there!",
+    "first_name_required_error_message": "Error: First Name is required",
+    "last_name_required_error_message": "Error: Last Name is required",
+    "postal_code_required_error_message": "Error: Postal Code is required"
+  }
+}

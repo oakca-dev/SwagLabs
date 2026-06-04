@@ -1,0 +1,62 @@
+{
+  "pet": {
+    "default_pet": {
+      "id": 200,
+      "name": "Buddy",
+      "status": "available",
+      "photo_urls": [
+        "https://example.com/buddy.jpg"
+      ],
+      "category": {
+        "id": 1,
+        "name": "Dogs"
+      },
+      "tags": [
+        {
+          "id": 1,
+          "name": "friendly"
+        }
+      ]
+    },
+    "create_pet": {
+      "id": 100,
+      "name": "TestPet",
+      "status": "available",
+      "photo_urls": [
+        "https://example.com/test.jpg"
+      ]
+    },
+    "delete_pet": {
+      "name": "ToDelete",
+      "status": "available",
+      "photo_urls": [
+        "https://example.com/delete.jpg"
+      ]
+    },
+    "no_photo_pet": {
+      "name": "NoPic",
+      "status": "available"
+    },
+    "invalid_id_cases": {
+      "string_id": "abc",
+      "string_id_expected_status": 500,
+      "empty_id_expected_status": 200,
+      "no_value_id_raw": "{\"id\": ,\"name\": \"TestPet\",\"status\": \"available\",\"photoUrls\": []}",
+      "no_value_id_expected_status": 400
+    },
+    "updated_name": "BuddyUpdated",
+    "updated_status": "sold",
+    "nonexistent_id": 999999999999,
+    "valid_statuses": [
+      "available",
+      "pending",
+      "sold"
+    ],
+    "invalid_status": "invalid",
+    "upload_image": {
+      "filename": "test.jpg",
+      "additional_metadata": "test image",
+      "expected_status": 200
+    }
+  }
+}
