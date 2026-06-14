@@ -13,6 +13,7 @@ from api.client.pet_api_client import PetApiClient
 
 HEADERS = {"Content-Type": "application/json", "Accept": "application/json"}
 MULTIPART_HEADERS = {"Accept": "application/json"}
+BASE_URL = "https://petstore.swagger.io/v2"
 
 # ── Shared API test data ──────────────────────────────────────────────────────
 with open("test_data/api/api_test_data.json") as f:
@@ -34,7 +35,7 @@ def api(playwright: Playwright) -> APIRequestContext:
 @pytest.fixture(scope="session")
 def pet_client(api: APIRequestContext) -> PetApiClient:
     """Session-scoped PetApiClient wrapping the API context."""
-    return PetApiClient(api)
+    return PetApiClient(api, BASE_URL)
 
 
 # ── Session-scoped PetApiClient for multipart uploads ─────────────────────────
@@ -43,7 +44,7 @@ def upload_pet_client(playwright: Playwright) -> PetApiClient:
     """PetApiClient using a context without Content-Type: application/json.
     Required for multipart/form-data endpoints like uploadImage."""
     context = playwright.request.new_context(extra_http_headers=MULTIPART_HEADERS)
-    yield PetApiClient(context)
+    yield PetApiClient(context, BASE_URL)
     context.dispose()
 
 

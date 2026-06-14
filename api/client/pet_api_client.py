@@ -15,18 +15,18 @@ Mirrors the Page Object pattern used in the UI layer:
 
 from playwright.sync_api import APIRequestContext, APIResponse
 
-BASE_URL = "https://petstore.swagger.io/v2"
-
 
 class PetApiClient:
 
-    def __init__(self, api: APIRequestContext):
+    def __init__(self, api: APIRequestContext, base_url: str):
         self.api = api
+        self.base_url = base_url
 
     # ── URL builder ───────────────────────────────────────────────────────────
 
     def _url(self, path: str) -> str:
-        return f"{BASE_URL}{path}"
+        """Build full URL from relative path using base_url from conftest."""
+        return f"{self.base_url}{path}"
 
     # ── CRUD methods ──────────────────────────────────────────────────────────
 
