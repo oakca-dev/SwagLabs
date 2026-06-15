@@ -20,5 +20,11 @@ class CheckoutSummaryPage:
         # e.g. "Total: $32.39" → 32.39
         return float(p_text.split("$")[1].strip())
 
+    def get_subtotal(self) -> float:
+        """Returns item subtotal (before tax) as a float."""
+        text = self.price_without_tax.text_content()
+        # e.g. "Item total: $29.99" → 29.99
+        return float(text.split("$")[1].strip())
+
     def finish(self):
         self.finish_btn.click()

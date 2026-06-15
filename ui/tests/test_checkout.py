@@ -10,6 +10,7 @@ Covers:
   TC-CHK-06  Step 2 – order summary shows correct item subtotal
   TC-CHK-07  Step 2 – cancel returns to inventory
   TC-CHK-08  Completing checkout empties the cart
+  TC-CHK-09  Step 2 – two items in cart, subtotal matches sum of both prices
 """
 
 import pytest
@@ -23,8 +24,9 @@ from ui.conftest import (
     INVENTORY_URL, CHECKOUT_INFO_URL, CHECKOUT_SUMMARY_URL, CHECKOUT_DONE_URL,
 )
 
-ITEM = PRODUCTS["backpack"]
-ORDER = CHECKOUT["order_info"]
+ITEM   = PRODUCTS["backpack"]
+ITEM_2 = PRODUCTS["bike_light"]
+ORDER  = CHECKOUT["order_info"]
 
 
 class TestCheckout:
@@ -39,14 +41,25 @@ class TestCheckout:
         self.cart     = CartPage(page)
         self.page     = page
 
-    def _add_item_and_go_to_cart(self, item: str = ITEM):
-        """Add one item and navigate to the cart page."""
-        self.inv.add_item_by_name(item)
+    def _add_items_and_go_to_cart(self, *items: str):
+        """Add one or more items and navigate to the cart page."""
+        for item in items:
+            self.inv.add_item_by_name(item)
         self.inv.open_cart()
 
-    def _proceed_to_fill_info(self, item: str = ITEM) -> CheckoutFillInfoPage:
-        """Add item, open cart, click checkout, return fill-info page object."""
-        self._add_item_and_go_to_cart(item)
+    def _get_cart_and_summary_subtotals(self) -> tuple[float, float]:
+        """Checkout from cart, fill info, return (cart_total, summary_subtotal)."""
+        expected_total = sum(self.cart.get_item_prices())
+        self.cart.checkout()
+        CheckoutFillInfoPage(self.page).fill_info(
+            ORDER["name"], ORDER["lastname"], ORDER["zipcode"]
+        )
+        subtotal = CheckoutSummaryPage(self.page).get_subtotal()
+        return expected_total, subtotal
+
+    def _proceed_to_fill_info(self, *items: str) -> CheckoutFillInfoPage:
+        """Add items, open cart, click checkout, return fill-info page object."""
+        self._add_items_and_go_to_cart(*(items or (ITEM,)))
         self.cart.checkout()
         return CheckoutFillInfoPage(self.page)
 
@@ -98,18 +111,9 @@ class TestCheckout:
 
     # ── TC-CHK-06 ─────────────────────────────────────────────────────────────
     def test_summary_page_shows_correct_subtotal(self):
-        """Order summary subtotal matches the sum of cart item prices."""
-        self._add_item_and_go_to_cart()
-        expected_total = sum(self.cart.get_item_prices())
-
-        self.cart.checkout()
-        CheckoutFillInfoPage(self.page).fill_info(
-            ORDER["name"], ORDER["lastname"], ORDER["zipcode"]
-        )
-
-        summary = CheckoutSummaryPage(self.page)
-        subtotal_text = summary.price_without_tax.text_content()
-        subtotal = float(subtotal_text.split("$")[1].strip())
+        """Order summary subtotal matches the sum of cart item prices (one item)."""
+        self._add_items_and_go_to_cart(ITEM)
+        expected_total, subtotal = self._get_cart_and_summary_subtotals()
 
         assert subtotal == pytest.approx(expected_total, abs=0.01), (
             f"Summary subtotal ${subtotal} doesn't match cart total ${expected_total}"
@@ -133,7 +137,20 @@ class TestCheckout:
         complete = CheckoutCompletePage(self.page)
         complete.back_home()
         expect(self.page).to_have_url(INVENTORY_URL)
+        #Shopping cart badge not visible if there is no item in cart
         expect(self.inv.cart_badge).not_to_be_visible()
 
         self.inv.open_cart()
+        #No item is present in cart if no item is added to cart
         expect(self.cart.cart_items).to_have_count(0)
+
+    # ── TC-CHK-09 ─────────────────────────────────────────────────────────────
+    def test_summary_page_shows_correct_subtotal_for_two_items(self):
+        """Order summary subtotal matches the sum of two item prices in cart."""
+        self._add_items_and_go_to_cart(ITEM, ITEM_2)
+        expected_total, subtotal = self._get_cart_and_summary_subtotals()
+
+        assert subtotal == pytest.approx(expected_total, abs=0.01), (
+            f"Summary subtotal ${subtotal} doesn't match two-item cart total ${expected_total}"
+        )
+

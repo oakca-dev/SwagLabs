@@ -23,6 +23,7 @@ class InventoryPage:
         self.detail_desc = page.locator(".inventory_details_desc")
         self.detail_price = page.locator(".inventory_details_price")
         self.detail_img = page.locator(".inventory_details_img")
+        self.item_prices = page.locator(".inventory_item_price")
 
     def add_item_by_name(self, name: str):
         """Click the 'Add to cart' button for a product by its name."""
@@ -36,7 +37,7 @@ class InventoryPage:
 
     def get_item_prices(self) -> list[float]:
         """Returns prices of all items on the screen as a list."""
-        prices = self.page.locator(".inventory_item_price").all_text_contents()
+        prices = self.item_prices.all_text_contents()
         return [float(p.replace("$", "")) for p in prices]
 
     def get_item_names(self) -> list[str]:

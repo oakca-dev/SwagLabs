@@ -16,15 +16,19 @@ ERRORS    = _TD["errors"]
 TEST_DATA = _TD["test_data"]
 CART_DATA = _TD["cart_data"]
 CHECKOUT  = _TD["check_out_page_data"]
+SORT_OPTIONS = _TD["sort_options"]
 
 # ── URL constants ─────────────────────────────────────────────────────────────
-BASE_URL            = "https://www.saucedemo.com"
-LOGIN_URL           = BASE_URL + "/"
-INVENTORY_URL       = BASE_URL + "/inventory.html"
-CART_URL            = BASE_URL + "/cart.html"
-CHECKOUT_INFO_URL   = BASE_URL + "/checkout-step-one.html"
+BASE_URL             = "https://www.saucedemo.com"
+LOGIN_URL            = BASE_URL + "/"
+INVENTORY_URL        = BASE_URL + "/inventory.html"
+CART_URL             = BASE_URL + "/cart.html"
+CHECKOUT_INFO_URL    = BASE_URL + "/checkout-step-one.html"
 CHECKOUT_SUMMARY_URL = BASE_URL + "/checkout-step-two.html"
-CHECKOUT_DONE_URL   = BASE_URL + "/checkout-complete.html"
+CHECKOUT_DONE_URL    = BASE_URL + "/checkout-complete.html"
+
+# ── URL glob patterns (for wait_for_url) ──────────────────────────────────────
+INVENTORY_URL_GLOB   = "**/inventory.html"
 
 
 # ── Create one shared browser instance for the entire test session ────────────

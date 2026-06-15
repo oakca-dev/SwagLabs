@@ -9,16 +9,18 @@ class CartPage:
     def __init__(self, page: Page):
         self.page = page
         self.cart_items = page.locator(".cart_item")
+        self.item_names = page.locator(".inventory_item_name")
+        self.item_prices = page.locator(".inventory_item_price")
         self.checkout_button = page.locator("[data-test='checkout']")
         self.continue_btn = page.locator("[data-test='continue-shopping']")
         self.remove_buttons_by_text = page.get_by_role("button", name="Remove")
 
     def get_item_names(self) -> list[str]:
-        return self.page.locator(".inventory_item_name").all_text_contents()
+        return self.item_names.all_text_contents()
 
     def get_item_prices(self) -> list[float]:
         """Returns prices of all items in the cart as a list of floats."""
-        prices = self.page.locator(".inventory_item_price").all_text_contents()
+        prices = self.item_prices.all_text_contents()
         return [float(p.replace("$", "").strip()) for p in prices]
 
     def checkout(self):
