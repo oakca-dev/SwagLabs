@@ -42,9 +42,17 @@ Endpoint: POST /pet
 ---------  -------  --------------------  -----------------------------------------------
 TC-PET-01  POST     /pet                  Create a pet — returns 200 with correct id, name, status, photoUrls
 TC-PET-11  POST     /pet                  Body without photoUrls — API accepts it, returns 200
-TC-PET-12  POST     /pet                  Missing id field — API accepts request and returns a generated id (200)
+TC-PET-12  POST     /pet                  Missing id field — API accepts, returns a generated id (200)
 TC-PET-13  POST     /pet                  String id value — returns 500 (server error)
 TC-PET-14  POST     /pet                  Malformed JSON with no id value — returns 400 (bad input)
+TC-PET-17  POST     /pet                  Very large id — accepted, echoed back (200)
+TC-PET-18  POST     /pet                  Negative id — accepted, server assigns max long integer (200)
+TC-PET-19  POST     /pet                  Long pet name (500 chars) — accepted without truncation (200)
+TC-PET-20  POST     /pet                  Special characters in name — accepted (200)
+TC-PET-21  POST     /pet                  Unicode characters in name — accepted (200)
+TC-PET-22  POST     /pet                  Invalid Content-Type (text/plain) — returns 415
+TC-PET-23  POST     /pet                  Null id — accepted, server assigns max long integer (200)
+TC-PET-24  POST     /pet                  Null name — accepted, name field absent from response (200)
 
 Endpoint: GET /pet/{id}
 ---------  -------  --------------------  -----------------------------------------------
@@ -70,6 +78,7 @@ TC-PET-08  GET      /pet/findByStatus     Invalid status — returns 200 with em
 Endpoint: POST /pet/{petId}/uploadImage
 ---------  -------  --------------------  -----------------------------------------------
 TC-PET-15  POST     /pet/{petId}/uploadImage   Upload image with metadata — returns 200 with filename and metadata in response
+TC-PET-16  POST     /pet/{petId}/uploadImage   No file sent — returns 500 server error
 
 
 Test Architecture

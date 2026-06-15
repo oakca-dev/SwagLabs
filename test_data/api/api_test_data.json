@@ -57,10 +57,22 @@
       "filename": "test.jpg",
       "additional_metadata": "test image",
       "no_file_expected_status": 500
+    },
+    "edge_cases": {
+      "very_large_id": 9999999999999999,
+      "negative_id": -1,
+      "long_name": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "special_chars_name": "Pet!@#$%^&*()",
+      "unicode_name": "宠物 ペット 반려동물",
+      "null_id_expected_status": 200,
+      "null_name_expected_status": 200,
+      "invalid_content_type_expected_status": 415,
+      "invalid_content_type": "text/plain"
     }
   },
   "http_status": {
     "ok": 200,
-    "not_found": 404
+    "not_found": 404,
+    "unsupported_media_type": 415
   }
 }

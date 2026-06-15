@@ -13,6 +13,7 @@ Mirrors the Page Object pattern used in the UI layer:
   - Page actions   → HTTP methods (create, get, update, delete, find_by_status)
 """
 
+import json
 from playwright.sync_api import APIRequestContext, APIResponse
 
 
@@ -39,6 +40,15 @@ class PetApiClient:
         return self.api.post(
             self._url("/pet"),
             data=raw_body,
+            fail_on_status_code=False
+        )
+
+    def create_with_content_type(self, payload: dict, content_type: str) -> APIResponse:
+        """POST /pet with a custom Content-Type header — used for invalid content type testing."""
+        return self.api.post(
+            self._url("/pet"),
+            data=json.dumps(payload),
+            headers={"Content-Type": content_type, "Accept": "application/json"},
             fail_on_status_code=False
         )
 

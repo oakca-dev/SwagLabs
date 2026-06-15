@@ -20,6 +20,14 @@ Covers:
   TC-PET-14  POST /pet          – Malformed JSON with no id value returns 400
   TC-PET-15  POST /pet/{petId}/uploadImage – Upload image for a pet returns 200
   TC-PET-16  POST /pet/{petId}/uploadImage – No file sent returns 500
+  TC-PET-17  POST /pet – Very large id is accepted (200)
+  TC-PET-18  POST /pet – Negative id is accepted, server overrides with max long (200)
+  TC-PET-19  POST /pet – Long pet name is accepted (200)
+  TC-PET-20  POST /pet – Special characters in name are accepted (200)
+  TC-PET-21  POST /pet – Unicode characters in name are accepted (200)
+  TC-PET-22  POST /pet – Invalid content type returns 415
+  TC-PET-23  POST /pet – Null id accepted, server assigns max long (200)
+  TC-PET-24  POST /pet – Null name accepted, name field absent from response (200)
 """
 
 import pytest
@@ -203,4 +211,140 @@ class TestPet:
         )
 
         assert response.status == d["no_file_expected_status"]
+
+    # ── TC-PET-17 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_very_large_id(self, pet_client: PetApiClient):
+        """POST /pet with a very large id – server accepts it and echoes the id back."""
+        large_id = PET_DATA["edge_cases"]["very_large_id"]
+        payload = PetApiClient.build_payload(
+            name=PET_DATA["create_pet"]["name"],
+            status=PET_DATA["create_pet"]["status"],
+            photo_urls=PET_DATA["create_pet"]["photo_urls"],
+            pet_id=large_id
+        )
+        response = pet_client.create(payload)
+
+        assert response.status == HTTP_STATUS["ok"]
+        body = response.json()
+        assert body["id"] == large_id
+
+        pet_client.delete(body["id"])
+
+    # ── TC-PET-18 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_negative_id(self, pet_client: PetApiClient):
+        """POST /pet with a negative id – server accepts it but overrides with max long value."""
+        payload = PetApiClient.build_payload(
+            name=PET_DATA["create_pet"]["name"],
+            status=PET_DATA["create_pet"]["status"],
+            photo_urls=PET_DATA["create_pet"]["photo_urls"],
+            pet_id=PET_DATA["edge_cases"]["negative_id"]
+        )
+        response = pet_client.create(payload)
+
+        assert response.status == HTTP_STATUS["ok"]
+        body = response.json()
+        # Server overrides negative id with max long integer
+        assert body["id"] > 0
+
+        pet_client.delete(body["id"])
+
+    # ── TC-PET-19 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_long_name(self, pet_client: PetApiClient):
+        """POST /pet with a 500 character name – server accepts it and returns 200."""
+        long_name = PET_DATA["edge_cases"]["long_name"]
+        payload = PetApiClient.build_payload(
+            name=long_name,
+            status=PET_DATA["create_pet"]["status"],
+            photo_urls=PET_DATA["create_pet"]["photo_urls"]
+        )
+        response = pet_client.create(payload)
+
+        assert response.status == HTTP_STATUS["ok"]
+        body = response.json()
+        assert body["name"] == long_name
+
+        pet_client.delete(body["id"])
+
+    # ── TC-PET-20 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_special_characters_in_name(self, pet_client: PetApiClient):
+        """POST /pet with special characters in name – server accepts it and returns 200."""
+        special_name = PET_DATA["edge_cases"]["special_chars_name"]
+        payload = PetApiClient.build_payload(
+            name=special_name,
+            status=PET_DATA["create_pet"]["status"],
+            photo_urls=PET_DATA["create_pet"]["photo_urls"]
+        )
+        response = pet_client.create(payload)
+
+        assert response.status == HTTP_STATUS["ok"]
+        body = response.json()
+        assert body["name"] == special_name
+
+        pet_client.delete(body["id"])
+
+    # ── TC-PET-21 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_unicode_name(self, pet_client: PetApiClient):
+        """POST /pet with unicode characters in name – server accepts it and returns 200."""
+        unicode_name = PET_DATA["edge_cases"]["unicode_name"]
+        payload = PetApiClient.build_payload(
+            name=unicode_name,
+            status=PET_DATA["create_pet"]["status"],
+            photo_urls=PET_DATA["create_pet"]["photo_urls"]
+        )
+        response = pet_client.create(payload)
+
+        assert response.status == HTTP_STATUS["ok"]
+        body = response.json()
+        assert body["name"] == unicode_name
+
+        pet_client.delete(body["id"])
+
+    # ── TC-PET-22 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_invalid_content_type(self, pet_client: PetApiClient):
+        """POST /pet with Content-Type: text/plain – server returns 415 Unsupported Media Type."""
+        payload = PetApiClient.build_payload(
+            name=PET_DATA["create_pet"]["name"],
+            status=PET_DATA["create_pet"]["status"],
+            photo_urls=PET_DATA["create_pet"]["photo_urls"]
+        )
+        response = pet_client.create_with_content_type(
+            payload,
+            content_type=PET_DATA["edge_cases"]["invalid_content_type"]
+        )
+
+        assert response.status == PET_DATA["edge_cases"]["invalid_content_type_expected_status"]
+
+    # ── TC-PET-23 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_null_id(self, pet_client: PetApiClient):
+        """POST /pet with null id – server accepts it, assigns max long integer."""
+        payload = {
+            "id": None,
+            "name": PET_DATA["create_pet"]["name"],
+            "status": PET_DATA["create_pet"]["status"],
+            "photoUrls": PET_DATA["create_pet"]["photo_urls"]
+        }
+        response = pet_client.create(payload)
+
+        assert response.status == PET_DATA["edge_cases"]["null_id_expected_status"]
+        body = response.json()
+        assert body["id"] > 0
+
+        pet_client.delete(body["id"])
+
+    # ── TC-PET-24 ─────────────────────────────────────────────────────────────
+    def test_create_pet_with_null_name(self, pet_client: PetApiClient):
+        """POST /pet with null name – server accepts it, name field is absent from response."""
+        payload = {
+            "id": 0,
+            "name": None,
+            "status": PET_DATA["create_pet"]["status"],
+            "photoUrls": PET_DATA["create_pet"]["photo_urls"]
+        }
+        response = pet_client.create(payload)
+
+        assert response.status == PET_DATA["edge_cases"]["null_name_expected_status"]
+        body = response.json()
+        assert "name" not in body or body.get("name") is None
+
+        pet_client.delete(body["id"])
 

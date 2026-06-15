@@ -95,11 +95,11 @@ See **flows.txt** for full scenario descriptions and design decisions.
 
 | Endpoint | Tests |
 |---|---|
-| `POST /pet` | TC-PET-01, 11, 12, 13, 14 |
+| `POST /pet` | TC-PET-01, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24 |
 | `GET /pet/{id}` | TC-PET-02, 09 |
 | `PUT /pet` | TC-PET-03 (update + GET persistence verify) |
 | `DELETE /pet/{id}` | TC-PET-10 |
 | `GET /pet/findByStatus` | TC-PET-05, 06, 07, 08 |
-| `POST /pet/{petId}/uploadImage` | TC-PET-15 |
+| `POST /pet/{petId}/uploadImage` | TC-PET-15, 16 |
 
 See **api-tests.txt** for full scenario descriptions and design decisions.
