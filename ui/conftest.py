@@ -33,9 +33,10 @@ INVENTORY_URL_GLOB   = "**/inventory.html"
 
 # ── Create one shared browser instance for the entire test session ────────────
 @pytest.fixture(scope="session")
-def browser_instance():
+def browser_instance(request):
+    headed = request.config.getoption("--headed", default=False)
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=not headed)
         yield browser
         browser.close()
 

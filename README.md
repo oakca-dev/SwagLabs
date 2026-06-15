@@ -80,26 +80,26 @@ python -m pytest api/tests/ -v
 
 ## What is Covered
 
-### UI — Swag Labs (`ui/tests/`)
+### UI — Swag Labs (`ui/tests/`) — 33 test runs
 
-| Area | Tests | File |
+| File | Tests | Scenarios |
 |---|---|---|
-| Authentication | TC-AUTH-01 to TC-AUTH-07 (10 runs via parametrize) | `test_auth.py` |
-| Inventory | TC-INV-01 to TC-INV-07 | `test_inventory.py` |
-| Shopping Cart | TC-CART-01 to TC-CART-07 | `test_cart.py` |
-| Checkout | TC-CHK-01 to TC-CHK-08 | `test_checkout.py` |
+| `test_auth.py` | 10 runs | Login (x4 users), locked user, wrong password, blank fields, logout, unauthenticated redirect |
+| `test_inventory.py` | 7 | Product count, sort A-Z/Z-A/price asc/desc, product detail open, detail elements |
+| `test_cart.py` | 7 | Add single/multiple items, remove from inventory/cart, persistence, empty cart |
+| `test_checkout.py` | 9 | Happy path, empty cart, 3 validation errors, subtotal (1 item), subtotal (2 items), cancel, cart empty after order |
 
 See **flows.txt** for full scenario descriptions and design decisions.
 
-### API — Petstore (`api/tests/`)
+### API — Petstore (`api/tests/`) — 23 test runs
 
-| Endpoint | Tests |
-|---|---|
-| `POST /pet` | TC-PET-01, 11, 12, 13, 14, 17, 18, 19, 20, 21, 22, 23, 24 |
-| `GET /pet/{id}` | TC-PET-02, 09 |
-| `PUT /pet` | TC-PET-03 (update + GET persistence verify) |
-| `DELETE /pet/{id}` | TC-PET-10 |
-| `GET /pet/findByStatus` | TC-PET-05, 06, 07, 08 |
-| `POST /pet/{petId}/uploadImage` | TC-PET-15, 16 |
+| Endpoint | Tests | Scenarios |
+|---|---|---|
+| `POST /pet` | 13 | Create, no photoUrls, empty/string/null/negative/large id, long/special/unicode name, null name, invalid content-type, malformed JSON |
+| `GET /pet/{id}` | 2 | Retrieve by id, non-existent id (404) |
+| `PUT /pet` | 1 | Update name+status, verify persistence via GET |
+| `DELETE /pet/{id}` | 1 | Delete, verify subsequent GET returns 404 |
+| `GET /pet/findByStatus` | 4 | available, pending, sold (parametrized), invalid status (empty list) |
+| `POST /pet/{petId}/uploadImage` | 2 | With file (200), without file (500) |
 
 See **api-tests.txt** for full scenario descriptions and design decisions.

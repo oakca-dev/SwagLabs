@@ -1,5 +1,7 @@
 API Test Suite - Petstore Pet Endpoints
 
+Total: 23 test executions (20 unique, findByStatus parametrized x3)
+
 ========================================
 Tools / Frameworks
 ========================================
@@ -7,7 +9,7 @@ Tools / Frameworks
 Tool                    Version   Purpose
 ----------------------  -------   ----------------------------------------
 Python                  3.13      Language
-Playwright for Python   1.60      APIRequestContext for API calls, browser automation for UI
+Playwright for Python   1.60      APIRequestContext for HTTP calls
 pytest                  9.0       Test runner, fixtures, assertions
 
 Playwright's APIRequestContext is used for all API HTTP calls.
@@ -24,8 +26,6 @@ Install dependencies (first time only):
     playwright install chromium
 
 IMPORTANT: UI and API tests must be run separately.
-Playwright's sync API cannot run inside the asyncio event loop started
-by pytest-playwright when UI and API tests run in the same session.
 
 Run API tests only:
     python -m pytest api/tests/ -v
@@ -35,59 +35,95 @@ Run UI tests only:
 
 
 ========================================
-What is Covered
+Test Scenarios
 ========================================
 
-Endpoint: POST /pet
----------  -------  --------------------  -----------------------------------------------
-TC-PET-01  POST     /pet                  Create a pet — returns 200 with correct id, name, status, photoUrls
-TC-PET-11  POST     /pet                  Body without photoUrls — API accepts it, returns 200
-TC-PET-12  POST     /pet                  Missing id field — API accepts, returns a generated id (200)
-TC-PET-13  POST     /pet                  String id value — returns 500 (server error)
-TC-PET-14  POST     /pet                  Malformed JSON with no id value — returns 400 (bad input)
-TC-PET-17  POST     /pet                  Very large id — accepted, echoed back (200)
-TC-PET-18  POST     /pet                  Negative id — accepted, server assigns max long integer (200)
-TC-PET-19  POST     /pet                  Long pet name (500 chars) — accepted without truncation (200)
-TC-PET-20  POST     /pet                  Special characters in name — accepted (200)
-TC-PET-21  POST     /pet                  Unicode characters in name — accepted (200)
-TC-PET-22  POST     /pet                  Invalid Content-Type (text/plain) — returns 415
-TC-PET-23  POST     /pet                  Null id — accepted, server assigns max long integer (200)
-TC-PET-24  POST     /pet                  Null name — accepted, name field absent from response (200)
+---- POST /pet (CRUD + edge cases) ----
 
-Endpoint: GET /pet/{id}
----------  -------  --------------------  -----------------------------------------------
-TC-PET-02  GET      /pet/{id}             Retrieve a pet by id — returns 200 with correct id
-TC-PET-09  GET      /pet/{id}             Non-existent pet id — returns 404
+TC-PET-01  test_create_pet_returns_200_and_id
+           Create pet with valid payload — returns 200 with correct id, name, status, photoUrls
 
-Endpoint: PUT /pet
----------  -------  --------------------  -----------------------------------------------
-TC-PET-03  PUT+GET  /pet                  Update pet name and status — returns 200, then
-                                          GET verifies updated fields are persisted
+TC-PET-11  test_create_pet_without_photo_urls_is_accepted
+           Body without photoUrls — API accepts it, returns 200 (lenient validation)
 
-Endpoint: DELETE /pet/{id}
----------  -------  --------------------  -----------------------------------------------
-TC-PET-10  DELETE   /pet/{id}             Delete a pet — returns 200, subsequent GET returns 404
+TC-PET-12  test_create_pet_with_empty_id_assigns_server_id
+           Missing id field — server assigns max long integer, returns 200
 
-Endpoint: GET /pet/findByStatus
----------  -------  --------------------  -----------------------------------------------
-TC-PET-05  GET      /pet/findByStatus     Filter by available — all returned pets have status=available
-TC-PET-06  GET      /pet/findByStatus     Filter by pending — all returned pets have status=pending
-TC-PET-07  GET      /pet/findByStatus     Filter by sold — all returned pets have status=sold
-TC-PET-08  GET      /pet/findByStatus     Invalid status — returns 200 with empty list (lenient behavior)
+TC-PET-13  test_create_pet_with_string_id_returns_500
+           String id value "abc" — returns 500 server error
 
-Endpoint: POST /pet/{petId}/uploadImage
----------  -------  --------------------  -----------------------------------------------
-TC-PET-15  POST     /pet/{petId}/uploadImage   Upload image with metadata — returns 200 with filename and metadata in response
-TC-PET-16  POST     /pet/{petId}/uploadImage   No file sent — returns 500 server error
+TC-PET-14  test_create_pet_with_no_value_id_returns_400
+           Malformed JSON with "id": (no value) — returns 400 bad input
+
+TC-PET-17  test_create_pet_with_very_large_id
+           Very large id (9999999999999999) — accepted, echoed back (200)
+
+TC-PET-18  test_create_pet_with_negative_id
+           Negative id (-1) — accepted, server overrides with max long (200)
+
+TC-PET-19  test_create_pet_with_long_name
+           500 character name — accepted without truncation (200)
+
+TC-PET-20  test_create_pet_with_special_characters_in_name
+           Special characters "Pet!@#$%^&*()" — accepted (200)
+
+TC-PET-21  test_create_pet_with_unicode_name
+           Unicode characters (Chinese/Japanese/Korean) — accepted (200)
+
+TC-PET-22  test_create_pet_with_invalid_content_type
+           Content-Type: text/plain — returns 415 Unsupported Media Type
+
+TC-PET-23  test_create_pet_with_null_id
+           "id": null — accepted, server assigns max long (200)
+
+TC-PET-24  test_create_pet_with_null_name
+           "name": null — accepted, name absent from response (200)
 
 
-Test Architecture
-=================
+---- GET /pet/{id} ----
 
-- API interactions encapsulated in PetApiClient
-- pytest fixtures manage test data lifecycle
-- Shared setup centralized in conftest.py
-- Test data externalized to JSON
+TC-PET-02  test_get_pet_by_id
+           Retrieve existing pet by id — returns 200 with correct id
+
+TC-PET-09  test_get_nonexistent_pet_returns_404
+           Non-existent id (999999999999) — returns 404
+
+
+---- PUT /pet ----
+
+TC-PET-03  test_update_pet
+           Update name and status via PUT — returns 200 with updated fields,
+           then GET verifies the update is persisted
+
+
+---- DELETE /pet/{id} ----
+
+TC-PET-10  test_delete_pet
+           Create pet, delete it, verify GET returns 404
+
+
+---- GET /pet/findByStatus ----
+
+TC-PET-05  test_find_by_valid_status[available]
+           Filter by "available" — all returned pets have status=available
+
+TC-PET-06  test_find_by_valid_status[pending]
+           Filter by "pending" — all returned pets have status=pending
+
+TC-PET-07  test_find_by_valid_status[sold]
+           Filter by "sold" — all returned pets have status=sold
+
+TC-PET-08  test_find_by_invalid_status_returns_empty_list
+           Invalid status value — returns 200 with empty list (lenient behavior)
+
+
+---- POST /pet/{petId}/uploadImage ----
+
+TC-PET-15  test_upload_image_for_pet
+           Upload image with metadata — returns 200, response contains filename and metadata
+
+TC-PET-16  test_upload_image_without_file_returns_500
+           No file sent — returns 500 server error
 
 
 ========================================
@@ -95,38 +131,29 @@ Design Decisions
 ========================================
 
 CRUD coverage first
-    TC-PET-01 through TC-PET-04 form a full create > read > update > verify
-    chain, covering the core lifecycle of a pet resource.
+    TC-PET-01/02/03/10 form a full create > read > update > delete chain.
 
-All three valid statuses tested
-    TC-PET-05/06/07 are parametrized with valid_statuses from api_test_data.json.
-    Each verifies that findByStatus returns only pets matching the requested status.
+Consolidated update + verify
+    TC-PET-03 does PUT then GET in one test — avoids dependency between tests
+    while still verifying persistence.
 
-Documented actual vs. spec behavior
-    The Swagger spec states findByStatus should return 400 for invalid values
-    and POST /pet requires photoUrls. The actual server behaves differently
-    (returns 200 in both cases). Tests document the real behavior rather than
-    the spec, with comments explaining the discrepancy.
+All three valid statuses parametrized
+    TC-PET-05/06/07 driven by valid_statuses array from api_test_data.json.
 
-Invalid id edge cases
-    TC-PET-12/13/14 document how the server handles missing, string, and
-    malformed id values — behaviors not specified in the Swagger spec.
+Edge cases document actual server behavior
+    TC-PET-11 through TC-PET-24 test inputs not specified in the Swagger spec
+    and document how the real server handles them (often more leniently than expected).
 
-Multipart upload context
-    TC-PET-15 uses a dedicated upload_pet_client fixture with a separate
-    APIRequestContext that omits Content-Type: application/json, since
-    Playwright automatically sets the correct multipart/form-data boundary
-    header when using the multipart= parameter.
+Multipart upload uses separate context
+    upload_pet_client fixture has no Content-Type: application/json header
+    so Playwright can set multipart/form-data boundary automatically.
 
-Shared server awareness
-    Since Petstore is a shared public environment, resource data can be modified 
-    by other clients at any time. TC-PET-04 re-applies the update immediately before 
-    retrieval to mitigate potential race conditions and concurrent writes.
+All values from JSON
+    Payloads, ids, names, expected statuses, and edge case inputs all loaded from
+    test_data/api/api_test_data.json.
 
-Cleanup in every test
-    Tests that create pets clean up after themselves (via fixture teardown or
-    inline delete) to avoid polluting the shared server.
+HTTP status codes from JSON
+    HTTP_STATUS["ok"], HTTP_STATUS["not_found"] etc. — no hardcoded 200/404 in tests.
 
-Test data driven
-    All payloads, expected values, and edge case inputs are loaded from
-    test_data/api/api_test_data.json — no hardcoded values in test files.
+Factory method pattern
+    PetApiClient.build_payload() centralizes payload construction.

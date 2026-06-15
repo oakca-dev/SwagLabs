@@ -1,5 +1,7 @@
 UI Test Suite - Swag Labs (https://www.saucedemo.com)
 
+Total: 33 test executions (7 unique tests parametrized across 4 users = 10 auth runs)
+
 ========================================
 Tools / Frameworks
 ========================================
@@ -22,29 +24,16 @@ Install dependencies (first time only):
 Run all UI tests:
     python -m pytest ui/tests/ -v
 
+Run in headed mode (see the browser):
+    python -m pytest ui/tests/ -v --headed
+
 Run a specific test file:
     python -m pytest ui/tests/test_auth.py -v
     python -m pytest ui/tests/test_cart.py -v
     python -m pytest ui/tests/test_checkout.py -v
     python -m pytest ui/tests/test_inventory.py -v
 
-Run a single test by name:
-    python -m pytest ui/tests/test_auth.py::TestAuthentication::test_user_can_login -v
-
-Run in headed mode (see the browser):
-    python -m pytest ui/tests/ -v --headed
-
 NOTE: Run UI and API tests separately. See api-tests.txt for API instructions.
-
-
-========================================
-Why These Flows Were Selected
-========================================
-
-The four flows cover the complete critical path a real user follows:
-authenticate → browse products → manage cart → complete purchase.
-These are the highest-risk areas for regressions. Every other feature
-(sorting, validation, session management) directly supports this path.
 
 
 ========================================
@@ -53,152 +42,130 @@ Test Scenarios
 
 ----------------------------------------
 FLOW 1 - Authentication (test_auth.py)
+10 test runs (7 unique, 4 parametrized)
 ----------------------------------------
 
-Why: Login is the entry point to the entire application. Any regression
-here blocks all other user flows. Validation and access control are
-also high-risk areas.
+TC-AUTH-01  test_user_can_login [parametrized x4]
+            Login with valid credentials lands on inventory page.
+            Runs for: standard_user, problem_user, error_user, visual_user
 
-Test ID    Scenario
----------  ----------------------------------------------------------------
-TC-AUTH-01 Successful login for all valid users (parametrized: standard,
-           problem, error, visual users)
-           - Verifies landing on inventory page with products visible
+TC-AUTH-02  test_locked_out_user_sees_error
+            locked_out_user sees full error message:
+            "Epic sadface: Sorry, this user has been locked out."
 
-TC-AUTH-02 Locked out user sees correct error message
-           - Verifies full error text: "Epic sadface: Sorry, this user
-             has been locked out."
+TC-AUTH-03  test_wrong_password_shows_error
+            Wrong password shows full error message:
+            "Epic sadface: Username and password do not match any user in this service"
 
-TC-AUTH-03 Wrong password shows credentials error
-           - Verifies full error text: "Epic sadface: Username and
-             password do not match any user in this service"
+TC-AUTH-04  test_blank_username_shows_error
+            Empty username shows: "Epic sadface: Username is required"
 
-TC-AUTH-04 Blank username shows validation error
-           - Verifies full error text: "Epic sadface: Username is required"
+TC-AUTH-05  test_blank_password_shows_error
+            Empty password shows: "Epic sadface: Password is required"
 
-TC-AUTH-05 Blank password shows validation error
-           - Verifies full error text: "Epic sadface: Password is required"
+TC-AUTH-06  test_logout_redirects_to_login
+            Logout from inventory page returns to login page
 
-TC-AUTH-06 Logout from inventory page returns to login page
-           - Verifies login button visible after logout
-
-TC-AUTH-07 Unauthenticated user navigating directly to /inventory.html
-           is redirected to login page
+TC-AUTH-07  test_unauthenticated_user_lands_on_login
+            Navigating directly to /inventory.html without auth redirects to login
 
 
 ----------------------------------------
-FLOW 2 - Inventory / Product Listing (test_inventory.py)
+FLOW 2 - Inventory (test_inventory.py)
+7 tests
 ----------------------------------------
 
-Why: The inventory page is the primary shopping surface. Sort and
-product detail are core browsing behaviors used before every purchase.
+TC-INV-01  test_all_products_displayed
+           All 6 products are visible on the inventory page
 
-Test ID    Scenario
----------  ----------------------------------------------------------------
-TC-INV-01  All 6 products are displayed on the inventory page
+TC-INV-02  test_sort_name_a_to_z
+           Sort A-Z produces names in ascending alphabetical order
 
-TC-INV-02  Sort A to Z — product names are in ascending alphabetical order
+TC-INV-03  test_sort_name_z_to_a
+           Sort Z-A produces names in descending alphabetical order
 
-TC-INV-03  Sort Z to A — product names are in descending alphabetical order
+TC-INV-04  test_sort_price_low_to_high
+           Sort Price Low-High produces prices in ascending order
 
-TC-INV-04  Sort Price Low to High — prices are in ascending order
+TC-INV-05  test_sort_price_high_to_low
+           Sort Price High-Low produces prices in descending order
 
-TC-INV-05  Sort Price High to Low — prices are in descending order
+TC-INV-06  test_product_detail_opens
+           Clicking first product opens detail page with correct name
 
-TC-INV-06  Clicking a product name opens its detail page with correct name
-
-TC-INV-07  Product detail page shows all required elements:
-           name, description, price, and image
+TC-INV-07  test_product_detail_has_required_elements
+           Detail page shows: name, description, price, image
 
 
 ----------------------------------------
 FLOW 3 - Shopping Cart (test_cart.py)
+7 tests
 ----------------------------------------
 
-Why: The cart is the bridge between browsing and purchasing. Badge
-accuracy, item persistence, and remove functionality are critical
-for user trust.
+TC-CART-01  test_add_single_item_updates_badge
+            Adding one item shows badge "1"
 
-Test ID    Scenario
----------  ----------------------------------------------------------------
-TC-CART-01 Adding one item updates the cart badge to "1"
+TC-CART-02  test_add_multiple_items_updates_badge
+            Adding three items shows badge "3"
 
-TC-CART-02 Adding three items updates the cart badge to "3"
+TC-CART-03  test_remove_from_inventory_resets_badge
+            Removing the only item hides the badge
 
-TC-CART-03 Removing the only item from inventory hides the cart badge
+TC-CART-04  test_cart_page_shows_added_items
+            Cart page lists exactly the added items
 
-TC-CART-04 Cart page lists exactly the items that were added
+TC-CART-05  test_remove_from_cart_page
+            Removing an item from cart page removes it, keeps others
 
-TC-CART-05 Removing an item from the cart page removes it from the list
-           while keeping remaining items
+TC-CART-06  test_cart_persists_after_navigation
+            Cart survives navigating back via Continue Shopping
 
-TC-CART-06 Cart contents persist after navigating back to the inventory
-           via Continue Shopping
-
-TC-CART-07 Empty cart shows zero items and no badge
+TC-CART-07  test_empty_cart_has_no_badge_and_no_items
+            Empty cart shows zero items and no badge
 
 
 ----------------------------------------
 FLOW 4 - Checkout (test_checkout.py)
+9 tests
 ----------------------------------------
 
-Why: Checkout is the most critical user flow — it directly represents
-revenue. Happy path, validation errors, price accuracy, and post-order
-state are all verified.
+TC-CHK-01  test_checkout
+           Full happy path: add item > cart > fill info > summary > finish
+           Verifies confirmation title, message, and Back Home returns to inventory
 
-Test ID    Scenario
----------  ----------------------------------------------------------------
-TC-CHK-01  Happy path checkout:
-           Add item > Cart > Fill Info > Summary > Finish
-           Verifies: confirmation title, confirmation message, Back Home
-           button returns to inventory
+TC-CHK-02  test_empty_cart_checkout
+           Checkout from empty cart still reaches step-one (fill info page)
 
-TC-CHK-02  Checkout from empty cart navigates to the info form (step 1)
+TC-CHK-03  test_missing_first_name_checkout
+           Missing first name shows: "Error: First Name is required"
 
-TC-CHK-03  Missing first name on info form shows validation error
+TC-CHK-04  test_missing_last_name_checkout
+           Missing last name shows: "Error: Last Name is required"
 
-TC-CHK-04  Missing last name on info form shows validation error
+TC-CHK-05  test_missing_postal_code_checkout
+           Missing postal code shows: "Error: Postal Code is required"
 
-TC-CHK-05  Missing postal code on info form shows validation error
+TC-CHK-06  test_summary_page_shows_correct_subtotal
+           One item: summary subtotal matches cart item price (within $0.01)
 
-TC-CHK-06  Order summary subtotal matches the sum of item prices
-           shown in the cart (verified to within $0.01)
+TC-CHK-07  test_summary_page_cancel_returns_to_inventory
+           Cancel on summary page returns to inventory
 
-TC-CHK-07  Cancelling on the order summary page returns to inventory
+TC-CHK-08  test_cart_empty_after_order_complete
+           After order: badge gone, cart page shows zero items
 
-TC-CHK-08  After completing an order:
-           - Cart badge is no longer visible
-           - Cart page shows zero items
+TC-CHK-09  test_summary_page_shows_correct_subtotal_for_two_items
+           Two items: summary subtotal matches sum of both prices (within $0.01)
 
 
 ========================================
 Design Decisions
 ========================================
 
-Parametrized login
-    TC-AUTH-01 runs once per valid user (standard, problem, error, visual)
-    to catch user-specific rendering differences without duplicating test code.
-    performance_glitch_user is excluded — deliberate slowness causes timeouts.
-
-Full error message verification
-    Auth error tests use to_have_text() (exact match) rather than
-    to_contain_text() to catch truncation or wording regressions.
-
-Price accuracy assertion
-    TC-CHK-06 uses pytest.approx with abs=0.01 tolerance to handle
-    floating point precision without false failures.
-
-Autouse fixtures for login
-    TestCart and TestInventory use autouse=True on the _login fixture
-    to ensure every test in those classes starts from a clean logged-in state
-    without repeating login code in each test.
-
-Page Object Model
-    All locators and actions are encapsulated in page classes under ui/pages/:
-    LoginPage, InventoryPage, CartPage, CheckoutFillInfoPage,
-    CheckoutSummaryPage, CheckoutCompletePage.
-    Test files contain no raw selectors.
-
-Test data externalised
-    Credentials, product names, error messages, and checkout data are all
-    loaded from test_data/ui/ui_test_data.json. No hardcoded values in tests.
+- Parametrized login: TC-AUTH-01 runs once per valid user
+- Full error message verification: to_have_text() not to_contain_text()
+- Price tolerance: pytest.approx with abs=0.01
+- Autouse fixtures for login in TestCart, TestInventory, TestCheckout
+- Page Object Model: all locators in ui/pages/, no raw selectors in tests
+- Test data from JSON: test_data/ui/ui_test_data.json
+- Sort options, products, users, errors all externalized
