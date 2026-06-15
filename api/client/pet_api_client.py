@@ -83,6 +83,18 @@ class PetApiClient:
             fail_on_status_code=False
         )
 
+    def upload_image_without_file(self, pet_id: int,
+                                  additional_metadata: str | None = None) -> APIResponse:
+        """POST /pet/{petId}/uploadImage with no file — expects a server error."""
+        multipart: dict = {}
+        if additional_metadata is not None:
+            multipart["additionalMetadata"] = additional_metadata
+        return self.api.post(
+            self._url(f"/pet/{pet_id}/uploadImage"),
+            multipart=multipart,
+            fail_on_status_code=False
+        )
+
     # ── Payload factory ───────────────────────────────────────────────────────
 
     @staticmethod

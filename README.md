@@ -70,12 +70,6 @@ python -m pytest ui/tests/test_checkout.py -v
 python -m pytest ui/tests/test_inventory.py -v
 ```
 
-Run in headed mode (see the browser):
-
-```bash
-python -m pytest ui/tests/ -v --headed
-```
-
 ### Run API tests
 
 ```bash
@@ -102,8 +96,8 @@ See **flows.txt** for full scenario descriptions and design decisions.
 | Endpoint | Tests |
 |---|---|
 | `POST /pet` | TC-PET-01, 11, 12, 13, 14 |
-| `GET /pet/{id}` | TC-PET-02, 04, 09 |
-| `PUT /pet` | TC-PET-03 |
+| `GET /pet/{id}` | TC-PET-02, 09 |
+| `PUT /pet` | TC-PET-03 (update + GET persistence verify) |
 | `DELETE /pet/{id}` | TC-PET-10 |
 | `GET /pet/findByStatus` | TC-PET-05, 06, 07, 08 |
 | `POST /pet/{petId}/uploadImage` | TC-PET-15 |

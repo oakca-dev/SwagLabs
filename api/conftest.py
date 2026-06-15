@@ -20,6 +20,7 @@ with open("test_data/api/api_test_data.json") as f:
     _TD = json.load(f)
 
 PET_DATA = _TD["pet"]
+HTTP_STATUS = _TD["http_status"]
 
 
 # ── Session-scoped API request context ────────────────────────────────────────

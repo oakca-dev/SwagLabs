@@ -49,12 +49,12 @@ TC-PET-14  POST     /pet                  Malformed JSON with no id value — re
 Endpoint: GET /pet/{id}
 ---------  -------  --------------------  -----------------------------------------------
 TC-PET-02  GET      /pet/{id}             Retrieve a pet by id — returns 200 with correct id
-TC-PET-04  GET      /pet/{id}             Verify updated fields are persisted after PUT
 TC-PET-09  GET      /pet/{id}             Non-existent pet id — returns 404
 
 Endpoint: PUT /pet
 ---------  -------  --------------------  -----------------------------------------------
-TC-PET-03  PUT      /pet                  Update pet name and status — returns 200 with updated fields
+TC-PET-03  PUT+GET  /pet                  Update pet name and status — returns 200, then
+                                          GET verifies updated fields are persisted
 
 Endpoint: DELETE /pet/{id}
 ---------  -------  --------------------  -----------------------------------------------

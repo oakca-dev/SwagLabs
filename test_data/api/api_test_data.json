@@ -56,7 +56,11 @@
     "upload_image": {
       "filename": "test.jpg",
       "additional_metadata": "test image",
-      "expected_status": 200
+      "no_file_expected_status": 500
     }
+  },
+  "http_status": {
+    "ok": 200,
+    "not_found": 404
   }
 }
