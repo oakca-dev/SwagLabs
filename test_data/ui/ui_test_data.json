@@ -40,7 +40,9 @@
     "password_required": "Epic sadface: Password is required"
   },
   "test_data": {
-    "wrong_password": "password"
+    "wrong_password": "password",
+    "long_username": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "special_chars_username": "!@#$%^&*()"
   },
   "cart_data": {
     "one_item": "1",

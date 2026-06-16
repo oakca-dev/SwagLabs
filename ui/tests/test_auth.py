@@ -2,13 +2,16 @@
 UI Tests – Authentication (TC-AUTH-*)
 
 Covers:
-  TC-AUTH-01  Successful login for all valid users
+  TC-AUTH-01  Successful login for all valid users (parametrized x4)
   TC-AUTH-02  Login blocked for locked_out_user
   TC-AUTH-03  Error shown for wrong password
   TC-AUTH-04  Error shown when username is blank
   TC-AUTH-05  Error shown when password is blank
-  TC-AUTH-06  Logout navigates back to login page
-  TC-AUTH-07  Protected routes redirect unauthenticated users to login
+  TC-AUTH-06  Error shown when both fields are empty
+  TC-AUTH-07  Error shown for very long username (200 chars)
+  TC-AUTH-08  Error shown for special characters username
+  TC-AUTH-09  Logout navigates back to login page
+  TC-AUTH-10  Protected routes redirect unauthenticated users to login
 """
 
 import pytest
@@ -24,21 +27,27 @@ LOGINABLE_USERS = [
     (USERS["visual"]["username"],   USERS["visual"]["password"]),
 ]
 
+# Login error scenarios: (username, password, expected_error, test_id)
+LOGIN_ERROR_CASES = [
+    pytest.param(USERS["locked"]["username"], USERS["locked"]["password"], ERRORS["locked_out"], id="locked_user"),
+    pytest.param(USERS["standard"]["username"], TEST_DATA["wrong_password"], ERRORS["wrong_password"], id="wrong_password"),
+    pytest.param("", USERS["standard"]["password"], ERRORS["username_required"], id="blank_username"),
+    pytest.param(USERS["standard"]["username"], "", ERRORS["password_required"], id="blank_password"),
+    pytest.param("", "", ERRORS["username_required"], id="both_empty"),
+    pytest.param(TEST_DATA["long_username"], USERS["standard"]["password"], ERRORS["wrong_password"], id="long_username"),
+    pytest.param(TEST_DATA["special_chars_username"], USERS["standard"]["password"], ERRORS["wrong_password"], id="special_chars_username"),
+]
+
 
 class TestAuthentication:
 
-    def _navigate_to_login(self, page: Page) -> LoginPage:
+    @staticmethod
+    def _navigate_to_login(page: Page) -> LoginPage:
         """Navigate to login page and return the LoginPage object."""
         return LoginPage(page).navigate()
 
-    def _login_and_expect_error(self, page: Page, username: str, password: str, expected_error: str):
-        """Attempt login with given credentials and assert error message matches."""
-        lp = self._navigate_to_login(page)
-        lp.login(username, password)
-        expect(lp.error_message).to_be_visible()
-        expect(lp.error_message).to_have_text(expected_error)
-
-    def _assert_on_login_page(self, page: Page):
+    @staticmethod
+    def _assert_on_login_page(page: Page):
         """Assert the browser is on the login page with login button visible."""
         expect(page).to_have_url(LOGIN_URL)
         expect(page.locator("#login-button")).to_be_visible()
@@ -51,37 +60,13 @@ class TestAuthentication:
         expect(page).to_have_url(INVENTORY_URL)
         expect(InventoryPage(page).product_items).not_to_have_count(0)
 
-    # ── TC-AUTH-02 ────────────────────────────────────────────────────────────
-    def test_locked_out_user_sees_error(self, page: Page):
-        """locked_out_user is refused with a clear error message."""
-        self._login_and_expect_error(
-            page, USERS["locked"]["username"], USERS["locked"]["password"],
-            ERRORS["locked_out"]
-        )
-
-    # ── TC-AUTH-03 ────────────────────────────────────────────────────────────
-    def test_wrong_password_shows_error(self, page: Page):
-        """Incorrect password triggers credentials error."""
-        self._login_and_expect_error(
-            page, USERS["standard"]["username"], TEST_DATA["wrong_password"],
-            ERRORS["wrong_password"]
-        )
-
-    # ── TC-AUTH-04 ────────────────────────────────────────────────────────────
-    def test_blank_username_shows_error(self, page: Page):
-        """Submitting with no username shows a validation error."""
-        self._login_and_expect_error(
-            page, "", USERS["standard"]["password"],
-            ERRORS["username_required"]
-        )
-
-    # ── TC-AUTH-05 ────────────────────────────────────────────────────────────
-    def test_blank_password_shows_error(self, page: Page):
-        """Submitting with no password shows a validation error."""
-        self._login_and_expect_error(
-            page, USERS["standard"]["username"], "",
-            ERRORS["password_required"]
-        )
+    # ── TC-AUTH-02/03/04/05 (parametrized) ────────────────────────────────────
+    @pytest.mark.parametrize("username, password, expected_error", LOGIN_ERROR_CASES)
+    def test_login_error(self, page: Page, username: str, password: str, expected_error: str):
+        """Invalid login shows the correct error message."""
+        lp = self._navigate_to_login(page)
+        lp.login(username, password)
+        expect(lp.error_message).to_have_text(expected_error)
 
     # ── TC-AUTH-06 ────────────────────────────────────────────────────────────
     def test_logout_redirects_to_login(self, page: Page):

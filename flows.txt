@@ -1,6 +1,6 @@
 UI Test Suite - Swag Labs (https://www.saucedemo.com)
 
-Total: 33 test executions (7 unique tests parametrized across 4 users = 10 auth runs)
+Total: 36 test executions (9 unique tests parametrized across multiple inputs)
 
 ========================================
 Tools / Frameworks
@@ -42,31 +42,34 @@ Test Scenarios
 
 ----------------------------------------
 FLOW 1 - Authentication (test_auth.py)
-10 test runs (7 unique, 4 parametrized)
+13 test runs (4 methods, 2 parametrized)
 ----------------------------------------
 
 TC-AUTH-01  test_user_can_login [parametrized x4]
             Login with valid credentials lands on inventory page.
             Runs for: standard_user, problem_user, error_user, visual_user
 
-TC-AUTH-02  test_locked_out_user_sees_error
-            locked_out_user sees full error message:
-            "Epic sadface: Sorry, this user has been locked out."
+TC-AUTH-02  test_login_error[locked_user]
+TC-AUTH-03  test_login_error[wrong_password]
+TC-AUTH-04  test_login_error[blank_username]
+TC-AUTH-05  test_login_error[blank_password]
+TC-AUTH-06  test_login_error[both_empty]
+TC-AUTH-07  test_login_error[long_username]
+TC-AUTH-08  test_login_error[special_chars_username]
+            All 7 consolidated into one parametrized test_login_error method.
+            Each verifies the full error message for its scenario:
+            - locked_user: "Epic sadface: Sorry, this user has been locked out."
+            - wrong_password: "Epic sadface: Username and password do not match..."
+            - blank_username: "Epic sadface: Username is required"
+            - blank_password: "Epic sadface: Password is required"
+            - both_empty: "Epic sadface: Username is required"
+            - long_username (200 chars): "Epic sadface: Username and password do not match..."
+            - special_chars (!@#$%^&*()): "Epic sadface: Username and password do not match..."
 
-TC-AUTH-03  test_wrong_password_shows_error
-            Wrong password shows full error message:
-            "Epic sadface: Username and password do not match any user in this service"
-
-TC-AUTH-04  test_blank_username_shows_error
-            Empty username shows: "Epic sadface: Username is required"
-
-TC-AUTH-05  test_blank_password_shows_error
-            Empty password shows: "Epic sadface: Password is required"
-
-TC-AUTH-06  test_logout_redirects_to_login
+TC-AUTH-09  test_logout_redirects_to_login
             Logout from inventory page returns to login page
 
-TC-AUTH-07  test_unauthenticated_user_lands_on_login
+TC-AUTH-10  test_unauthenticated_user_lands_on_login
             Navigating directly to /inventory.html without auth redirects to login
 
 

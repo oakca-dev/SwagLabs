@@ -84,7 +84,7 @@ python -m pytest api/tests/ -v
 
 | File | Tests | Scenarios |
 |---|---|---|
-| `test_auth.py` | 10 runs | Login (x4 users), locked user, wrong password, blank fields, logout, unauthenticated redirect |
+| `test_auth.py` | 13 runs | Login success (x4 users), login errors (locked, wrong pass, blank user, blank pass, both empty, long username, special chars), logout, unauthenticated redirect |
 | `test_inventory.py` | 7 | Product count, sort A-Z/Z-A/price asc/desc, product detail open, detail elements |
 | `test_cart.py` | 7 | Add single/multiple items, remove from inventory/cart, persistence, empty cart |
 | `test_checkout.py` | 9 | Happy path, empty cart, 3 validation errors, subtotal (1 item), subtotal (2 items), cancel, cart empty after order |
