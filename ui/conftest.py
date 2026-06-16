@@ -31,12 +31,22 @@ CHECKOUT_DONE_URL    = BASE_URL + "/checkout-complete.html"
 INVENTORY_URL_GLOB   = "**/inventory.html"
 
 
+# ── Supported browsers ────────────────────────────────────────────────────────
+SUPPORTED_BROWSERS = ("chromium", "firefox", "webkit")
+
+
 # ── Create one shared browser instance for the entire test session ────────────
 @pytest.fixture(scope="session")
 def browser_instance(request):
     headed = request.config.getoption("--headed", default=False)
+    browser_name = request.config.getoption("--browser", default="chromium")
+    if isinstance(browser_name, list):
+        browser_name = browser_name[0] if browser_name else "chromium"
+    if browser_name not in SUPPORTED_BROWSERS:
+        raise ValueError(f"Unsupported browser: {browser_name}. Choose from {SUPPORTED_BROWSERS}")
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=not headed)
+        browser_type = getattr(p, browser_name)
+        browser = browser_type.launch(headless=not headed)
         yield browser
         browser.close()
 
