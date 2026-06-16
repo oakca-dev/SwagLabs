@@ -27,6 +27,12 @@ Run all UI tests:
 Run in headed mode (see the browser):
     python -m pytest ui/tests/ -v --headed
 
+Run on Firefox:
+    python -m pytest ui/tests/ -v --browser firefox
+
+Run on Safari (WebKit):
+    python -m pytest ui/tests/ -v --browser webkit
+
 Run a specific test file:
     python -m pytest ui/tests/test_auth.py -v
     python -m pytest ui/tests/test_cart.py -v

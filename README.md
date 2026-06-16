@@ -61,6 +61,24 @@ playwright install chromium
 python -m pytest ui/tests/ -v
 ```
 
+Run in headed mode (see the browser):
+
+```bash
+python -m pytest ui/tests/ -v --headed
+```
+
+Run on Firefox:
+
+```bash
+python -m pytest ui/tests/ -v --browser firefox
+```
+
+Run on Safari (WebKit):
+
+```bash
+python -m pytest ui/tests/ -v --browser webkit
+```
+
 Run a specific file:
 
 ```bash
