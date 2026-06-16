@@ -1,6 +1,5 @@
 from playwright.sync_api import Page
-
-BASE_URL = "https://www.saucedemo.com"
+from ui.conftest import BASE_URL
 
 
 class CheckoutCompletePage:

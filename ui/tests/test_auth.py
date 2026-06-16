@@ -27,60 +27,73 @@ LOGINABLE_USERS = [
 
 class TestAuthentication:
 
+    def _navigate_to_login(self, page: Page) -> LoginPage:
+        """Navigate to login page and return the LoginPage object."""
+        return LoginPage(page).navigate()
+
+    def _login_and_expect_error(self, page: Page, username: str, password: str, expected_error: str):
+        """Attempt login with given credentials and assert error message matches."""
+        lp = self._navigate_to_login(page)
+        lp.login(username, password)
+        expect(lp.error_message).to_be_visible()
+        expect(lp.error_message).to_have_text(expected_error)
+
+    def _assert_on_login_page(self, page: Page):
+        """Assert the browser is on the login page with login button visible."""
+        expect(page).to_have_url(LOGIN_URL)
+        expect(page.locator("#login-button")).to_be_visible()
+
     # ── TC-AUTH-01 ────────────────────────────────────────────────────────────
     @pytest.mark.parametrize("username, password", LOGINABLE_USERS)
     def test_user_can_login(self, page: Page, username: str, password: str):
         """Successful login lands on the inventory page for all valid users."""
-        LoginPage(page).navigate().login(username, password)
-        inv = InventoryPage(page)
+        self._navigate_to_login(page).login(username, password)
         expect(page).to_have_url(INVENTORY_URL)
-        expect(inv.product_items).not_to_have_count(0)
+        expect(InventoryPage(page).product_items).not_to_have_count(0)
 
     # ── TC-AUTH-02 ────────────────────────────────────────────────────────────
     def test_locked_out_user_sees_error(self, page: Page):
         """locked_out_user is refused with a clear error message."""
-        lp = LoginPage(page).navigate()
-        lp.login(USERS["locked"]["username"], USERS["locked"]["password"])
-        expect(lp.error_message).to_be_visible()
-        expect(lp.error_message).to_have_text(ERRORS["locked_out"])
+        self._login_and_expect_error(
+            page, USERS["locked"]["username"], USERS["locked"]["password"],
+            ERRORS["locked_out"]
+        )
 
     # ── TC-AUTH-03 ────────────────────────────────────────────────────────────
     def test_wrong_password_shows_error(self, page: Page):
         """Incorrect password triggers credentials error."""
-        lp = LoginPage(page).navigate()
-        lp.login(USERS["standard"]["username"], TEST_DATA["wrong_password"])
-        expect(lp.error_message).to_be_visible()
-        expect(lp.error_message).to_have_text(ERRORS["wrong_password"])
+        self._login_and_expect_error(
+            page, USERS["standard"]["username"], TEST_DATA["wrong_password"],
+            ERRORS["wrong_password"]
+        )
 
     # ── TC-AUTH-04 ────────────────────────────────────────────────────────────
     def test_blank_username_shows_error(self, page: Page):
         """Submitting with no username shows a validation error."""
-        lp = LoginPage(page).navigate()
-        lp.login("", USERS["standard"]["password"])
-        expect(lp.error_message).to_be_visible()
-        expect(lp.error_message).to_have_text(ERRORS["username_required"])
+        self._login_and_expect_error(
+            page, "", USERS["standard"]["password"],
+            ERRORS["username_required"]
+        )
 
     # ── TC-AUTH-05 ────────────────────────────────────────────────────────────
     def test_blank_password_shows_error(self, page: Page):
         """Submitting with no password shows a validation error."""
-        lp = LoginPage(page).navigate()
-        lp.login(USERS["standard"]["username"], "")
-        expect(lp.error_message).to_be_visible()
-        expect(lp.error_message).to_have_text(ERRORS["password_required"])
+        self._login_and_expect_error(
+            page, USERS["standard"]["username"], "",
+            ERRORS["password_required"]
+        )
 
     # ── TC-AUTH-06 ────────────────────────────────────────────────────────────
     def test_logout_redirects_to_login(self, page: Page):
         """Clicking logout from the inventory page returns to login."""
-        LoginPage(page).navigate().login(
+        self._navigate_to_login(page).login(
             USERS["standard"]["username"], USERS["standard"]["password"]
         )
         InventoryPage(page).logout()
-        expect(page).to_have_url(LOGIN_URL)
-        expect(page.locator("#login-button")).to_be_visible()
+        self._assert_on_login_page(page)
 
     # ── TC-AUTH-07 ────────────────────────────────────────────────────────────
     def test_unauthenticated_user_lands_on_login(self, page: Page):
         """Navigating directly to a protected URL redirects to the login page."""
         page.goto(INVENTORY_URL)
-        expect(page).to_have_url(LOGIN_URL)
-        expect(page.locator("#login-button")).to_be_visible()
+        self._assert_on_login_page(page)

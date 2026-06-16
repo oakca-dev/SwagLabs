@@ -15,7 +15,7 @@ import re
 import pytest
 from playwright.sync_api import Page, expect
 from ui.pages import LoginPage, InventoryPage
-from ui.conftest import USERS, INVENTORY_URL, INVENTORY_URL_GLOB, SORT_OPTIONS
+from ui.conftest import USERS, INVENTORY_URL, SORT_OPTIONS
 
 EXPECTED_PRODUCT_COUNT = 6
 
@@ -28,7 +28,7 @@ class TestInventory:
         LoginPage(page).navigate().login(
             USERS["standard"]["username"], USERS["standard"]["password"]
         )
-        page.wait_for_url(INVENTORY_URL_GLOB)
+        page.wait_for_url(INVENTORY_URL)
         self.inv = InventoryPage(page)
         self.page = page
 

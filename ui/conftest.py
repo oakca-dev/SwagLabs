@@ -27,10 +27,6 @@ CHECKOUT_INFO_URL    = BASE_URL + "/checkout-step-one.html"
 CHECKOUT_SUMMARY_URL = BASE_URL + "/checkout-step-two.html"
 CHECKOUT_DONE_URL    = BASE_URL + "/checkout-complete.html"
 
-# ── URL glob patterns (for wait_for_url) ──────────────────────────────────────
-INVENTORY_URL_GLOB   = "**/inventory.html"
-
-
 # ── Supported browsers ────────────────────────────────────────────────────────
 SUPPORTED_BROWSERS = ("chromium", "firefox", "webkit")
 
